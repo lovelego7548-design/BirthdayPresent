@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title> 🎂</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Caveat:wght@600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --cream:#f8ffe3;
+    --cream-card:#FFFDF3;
+    --ink:#783606;
+    --coral:#FF6F61;
+    --sky:#6FC7E0;
+    --sun:#FFD24C;
+    --mint:#8FD6A0;
+    --lav:#B39DDB;
+    --pink:#FF9CC7;
+    --leaf:#8CD790;
+  }
+  *{box-sizing:border-box;}
+  html,body{ background:var(--cream); }
+  body{
+    font-family:'Nunito', sans-serif;
+    color:var(--ink);
+    overflow-x:hidden;
+  }
+  .font-bubble{ font-family:'Baloo 2', cursive; }
+  .font-script{ font-family:'Caveat', cursive; }
+
+  .doodle-border{
+    border:3px solid var(--ink);
+    border-radius:20px;
+    box-shadow:5px 5px 0px 0px var(--ink);
+  }
+  .btn-pop{ transition:transform .15s ease, box-shadow .15s ease; }
+  .btn-pop:hover{ transform:translate(-2px,-2px); box-shadow:6px 6px 0px 0px var(--ink); }
+  .btn-pop:active{ transform:translate(1px,1px); box-shadow:2px 2px 0px 0px var(--ink); }
+
+  .screen{ display:none; min-height:100vh; }
+  .screen.active{ display:flex; flex-direction:column; }
+
+  .confetti-dot{ position:absolute; border-radius:9999px; opacity:.5; }
+
+  /* bubble multicolor heading */
+  .bubble-heading span{
+    display:inline-block;
+    -webkit-text-stroke:2.5px var(--ink);
+    text-stroke:2.5px var(--ink);
+    text-shadow:3px 3px 0 var(--ink);
+  }
+
+  /* Date digit boxes */
+  .date-box{
+    width:46px; height:58px;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Baloo 2',cursive; font-size:26px; font-weight:700;
+    background:var(--cream-card);
+    color:var(--ink);
+    border:3px solid var(--ink);
+    border-radius:10px;
+    text-align:center;
+  }
+  .date-slash{ font-family:'Baloo 2',cursive; font-size:26px; font-weight:700; }
+
+  /* Balloon screen */
+  #balloonStage{ position:relative; width:100%; height:100vh; overflow:hidden; background:linear-gradient(180deg,#BEE7F2 0%, #EAF7FB 60%, var(--cream) 100%); cursor:pointer; }
+  .balloon{
+    position:absolute;
+    width:70px; height:86px;
+    border-radius:50% 50% 50% 50% / 55% 55% 45% 45%;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Baloo 2',cursive; font-weight:700; font-size:28px;
+    color:#fff;
+    border:2.5px solid rgba(120,54,6,0.55);
+    transition: transform 2.2s cubic-bezier(.2,.8,.2,1), opacity 2s ease, top 2.2s cubic-bezier(.2,.8,.2,1), left 2.2s cubic-bezier(.2,.8,.2,1);
+  }
+  .balloon::after{
+    content:"";
+    position:absolute; bottom:-30px; left:50%;
+    width:2px; height:30px;
+    transform:translateX(-50%);
+  }
+  .balloon-float{ animation: bob 3.4s ease-in-out infinite; }
+  @keyframes bob{ 0%,100%{ transform:translateY(0px);} 50%{ transform:translateY(-18px);} }
+  .balloon-fadeup{ opacity:0 !important; }
+
+  #merged26{
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    display:none; flex-direction:column; align-items:center; gap:16px; z-index:20;
+  }
+  #clickHereBtn{ display:none; }
+
+  /* menu icons */
+  .menu-icon-btn{
+    display:flex; flex-direction:column; align-items:center; gap:8px;
+    cursor:pointer; background:none; border:none;
+  }
+  .menu-icon-wrap{
+    width:84px; height:84px;
+    display:flex; align-items:center; justify-content:center;
+    transition:transform .2s ease;
+  }
+  .menu-icon-btn:hover .menu-icon-wrap{ transform:translateY(-6px) rotate(-4deg); }
+
+  /* polaroid */
+  .polaroid{
+    background:#f8ffe3;
+    border:3px solid var(--ink);
+    border-radius:6px;
+    padding:8px 8px 22px 8px;
+    box-shadow:4px 4px 0 0 var(--ink);
+    cursor:pointer;
+    transition:transform .2s ease;
+  }
+  .polaroid:hover{ transform:translateY(-4px) scale(1.02); }
+  .polaroid-img{
+    width:100%; aspect-ratio:1/1;
+    background-size:cover; background-position:center;
+    background-color:#f8ffe3;
+    border-radius:2px;
+  }
+
+  /* letter card */
+  #envelope{ cursor:pointer; transition:transform .3s ease; }
+  #letterPaper{
+    position:absolute; left:50%; top:6%;
+    transform:translate(-50%,0) scale(0.2);
+    opacity:0;
+    width:92%; max-width:520px; max-height:82%;
+    overflow-y:auto;
+    transition: transform .7s cubic-bezier(.2,.8,.2,1), opacity .5s ease;
+    pointer-events:none;
+  }
+  #letterPaper.open{ transform:translate(-50%,0) scale(1); opacity:1; pointer-events:auto; }
+
+  /* candle */
+  .candle-flame{ transition:opacity .8s ease, transform .8s ease; }
+  .candle-out{ opacity:0 !important; transform:scale(.2) translateY(6px); }
+
+  /* playlist */
+  .playlist-row{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:8px 10px; border-radius:12px; cursor:pointer;
+  }
+  .playlist-row.playing{ background:#f8ffe3; }
+
+  /* bgm widget */
+  #bgmWidget{
+    position:fixed; bottom:18px; right:18px; z-index:50;
+  }
+  #bgmPanel{ display:none; }
+  #bgmPanel.open{ display:flex; }
+
+  input:focus, button:focus{ outline:3px solid var(--lav); outline-offset:2px; }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!-- ★★★ 設定エリア（変数） / CONFIG AREA - 差し替えはここだけでOK ★★★ -->
+<!-- ============================================================ -->
+<script>
+const CONFIG = {
+  // ---- メニュー画面に出す名前（彼氏さんの名前などに変更してね） ----
+  recipientName: "MAX",
+
+  // ---- 手紙のテキスト（日本語/英語） ----
+  letter: {
+    ja: `マックスへ
+
+お誕生日おめでとう！
+ついに２６歳だね！
+一番遠い場所にいるのに、いつも近くで支えてくれて、本当にありがとう。
+私は、メンタルが弱くてさみしがり屋でいつも泣いて、すぐ怒って。
+そんな私をマックスは受け止めてくれるのが本当にうれしいです。
+私はマックスにとって、自分らしくいられる存在でありたいし、なんでも相談できる存在でありたいです。
+マックスの26年間のうちのほんの一部しか知らないけれど、これからも、マックスの人生の一部に関わることができたらうれしいです。
+笑って、時々ケンカもしながら、
+二人らしいペースで歩んでいけたら嬉しいです。
+
+これからの一年も、あなたにとって
+素敵なことがたくさん起こりますように。
+
+いつも大好きです。
+
+ななこより`,
+    en: `Dear MAX,
+
+Happy birthday!
+You're finally 26!
+Even though you're so far away, you're always there to support me.
+As you know,I'm emotionally fragile, prone to feeling lonely, always crying, and quick to get angry.
+It makes me so happy that you accepts me just the way I am.
+I want to be someone you can be yourself around, and someone you can confide in about anything.
+I only know a small portion of your 26 years, but I'd be happy if I could continue to be a part of your life from here on out.
+Laughing together, and evenarguing sometimes,
+I hope we can move forward at a pace that's just right for the two of us.
+
+I hope that in the coming year,
+many wonderful things will happen for you.
+
+I love you always.
+
+Love, Nanako`
+  },
+
+  // ---- カメラ（アルバム）の画像パス：ポラロイド20枚分のダミー ----
+  // 1ページ4枚 × 5ページ構成。images/ フォルダに photo1.jpg ... photo20.jpg を置くだけ（順不同でOK）
+  photos: Array.from({length:20}, (_, i) => `images/photo${i+1}.jpg`),
+
+  // ---- CDプレーヤーの曲リスト：8曲。music/ に song1.mp3〜song8.mp3 を番号順に配置 ----
+  playlist: [
+    { title: "Birthday (pluggnb)", artist: "Katy Perry", src: "music/song1.mp3" },
+    { title: "Happy Birthday (Childish Major)", artist: "feat.SZA & Isaiah Rashad", src: "music/song2.mp3" },
+    { title: "Happy Birthday", artist: "Stevie Wonder", src: "music/song3.mp3" },
+    { title: "Hey Now (Jemini Remix)", artist: "Kendrick Lamar, Dody6, Cybotron", src: "music/song4.mp3" },
+    { title: "It's Your Birthday (plan8 edit)", artist: "50 Cent", src: "music/song5.mp3" },
+    { title: "Not Like Us (omoide)", artist: "Kendrick Lamar", src: "music/song6.mp3" },
+    { title: "Wanna Get Up and Start Being a Sex Machine (MadMixMustang)", artist: "Michael Jackson vs James Brown", src: "music/song7.mp3" },
+    { title: "I Feel Good (Soul Mates Remix)", artist: "Busta Rhymes & James Brown", src: "music/song8.mp3" },
+  ],
+
+  // ---- 常時流れるBGM（プレイリストとは別。ON/OFF・音量は画面右下のスピーカーから調整） ----
+  bgm: { src: "music/bgm.mp3", defaultVolume: 0.35 },
+
+  // ---- ケーキのろうそく：本数と色 ----
+  candleCount: 10,
+  candleColors: ["#FF6F61","#6FC7E0","#FFD24C","#8FD6A0","#B39DDB","#FF9CC7","#F4A259","#7FB7BE","#E8A0BF","#A0C4FF"],
+};
+// ============================================================
+// ★★★ 設定エリアはここまで ★★★
+// ============================================================
+</script>
+
+<!-- ============================================================ -->
+<!-- 言語スイッチ（常時表示） -->
+<!-- ============================================================ -->
+<div class="fixed top-4 right-4 z-50">
+  <div class="doodle-border bg-white flex items-center gap-1 px-2 py-1" style="border-radius:9999px; box-shadow:3px 3px 0 0 var(--ink);">
+    <button id="langJaBtn" class="px-3 py-1 rounded-full text-sm font-bold font-bubble transition">日本語</button>
+    <span class="text-sm">/</span>
+    <button id="langEnBtn" class="px-3 py-1 rounded-full text-sm font-bold font-bubble transition">English</button>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- BGM ウィジェット（常時表示・ON/OFF・音量調整） -->
+<!-- ============================================================ -->
+<div id="bgmWidget">
+  <div id="bgmPanel" class="doodle-border bg-white p-3 mb-2 items-center gap-3" style="border-radius:16px;">
+    <button id="bgmToggle" class="btn-pop flex items-center justify-center w-9 h-9 rounded-full border-2" style="border-color:var(--ink); background:var(--sun);">
+      <i data-lucide="volume-2" class="w-4 h-4" id="bgmIcon"></i>
+    </button>
+    <input id="bgmVolume" type="range" min="0" max="100" value="35" class="w-24">
+  </div>
+  <button id="bgmFab" class="btn-pop doodle-border w-12 h-12 rounded-full flex items-center justify-center bg-white">
+    <i data-lucide="music" class="w-5 h-5"></i>
+  </button>
+</div>
+<audio id="bgmAudio" loop></audio>
+
+<!-- ============================================================ -->
+<!-- 背景コンフェッティ -->
+<!-- ============================================================ -->
+<div id="confettiBg" class="fixed inset-0 pointer-events-none z-0"></div>
+
+<!-- ============================================================ -->
+<!-- 1. スタート画面（ログイン風） -->
+<!-- ============================================================ -->
+<section id="screen-login" class="screen active relative z-10 items-center justify-center px-4">
+  <div class="text-center w-full max-w-md">
+    <h1 class="font-bubble text-4xl md:text-5xl mb-10" style="color:var(--coral);" data-i18n="loginTitle">Enter Your Birthday</h1>
+
+    <form id="loginForm">
+      <div class="flex items-center justify-center gap-2 flex-wrap mb-3">
+        <input maxlength="2" class="date-box" data-group="m" inputmode="numeric" placeholder="mm">
+        <span class="date-slash">/</span>
+        <input maxlength="2" class="date-box" data-group="d" inputmode="numeric" placeholder="dd">
+        <span class="date-slash">/</span>
+        <input maxlength="4" class="date-box" style="width:76px;" data-group="y" inputmode="numeric" placeholder="yyyy">
+      </div>
+      <p class="text-xs text-gray-400 mb-8 font-bubble tracking-wide" data-i18n="dateFormatHint">mm / dd / yyyy</p>
+
+      <button type="submit" class="btn-pop doodle-border px-12 py-3 font-bubble text-xl font-bold" style="background:var(--sky);" data-i18n="loginBtn">
+        OK
+      </button>
+    </form>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 2-3. 風船アニメーション（浮遊 → 収束して26に） -->
+<!-- ============================================================ -->
+<section id="screen-balloons" class="screen relative z-10">
+  <div id="balloonStage">
+    <p id="balloonHintText" class="absolute top-8 left-1/2 -translate-x-1/2 font-bubble text-white text-lg drop-shadow z-10" data-i18n="balloonTapHint">Click the Balloons!</p>
+   <div id="merged26" class="text-center">
+            <!-- 26の文字とボタンの代わりに、Canvaで作った画像をボタン化して表示 -->
+            <button id="clickHereBtn" class="btn-pop focus:outline-none transition-transform hover:scale-105 active:scale-95 block mx-auto">
+                <img src="images/title_26years.png" alt="You Have Lived 26 Years!! CLICK HERE" class="max-w-md w-full mx-auto object-contain">
+            </button>
+        </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 4. トップメニュー -->
+<!-- ============================================================ -->
+<section id="screen-menu" class="screen relative z-10 items-center justify-center px-4 py-10">
+  <div class="w-full max-w-3xl text-center">
+    <img src="images/title_birthday.png" alt="Happy Birthday" class="max-w-xl w-full mx-auto mb-4 object-contain">
+
+    <div class="flex items-start justify-center gap-12 md:gap-16 my-10 flex-wrap">
+      
+      <!-- 1. ケーキ画面ボタン -->
+      <button class="menu-icon-btn" data-target="screen-cake">
+        <div class="menu-icon-wrap">
+          <img src="images/menu_cake.png" alt="Cake" class="w-40 h-40 md:w-64 md:h-64 object-contain mx-auto transition-transform hover:scale-110">
+        </div>
+        <span class="font-bubble text-sm font-bold" data-i18n="menuCake">Cake</span>
+      </button>
+
+      <!-- 2. 手紙画面ボタン -->
+      <button class="menu-icon-btn" data-target="screen-letter">
+        <div class="menu-icon-wrap">
+          <img src="images/menu_letter.png" alt="Letter" class="w-40 h-40 md:w-64 md:h-64 object-contain mx-auto transition-transform hover:scale-110">
+        </div>
+        <span class="font-bubble text-sm font-bold" data-i18n="menuLetter">Letter</span>
+      </button>
+
+      <!-- 3. カメラ画面ボタン -->
+      <button class="menu-icon-btn" data-target="screen-camera">
+        <div class="menu-icon-wrap">
+          <img src="images/menu_camera.png" alt="camera" class="w-40 h-40 md:w-64 md:h-64 object-contain mx-auto transition-transform hover:scale-110">
+        </div>
+        <span class="font-bubble text-sm font-bold" data-i18n="menucamera">camera</span>
+      </button>
+
+      <!-- 4. CDプレイヤー画面ボタン -->
+      <button class="menu-icon-btn" data-target="screen-cd">
+        <div class="menu-icon-wrap">
+          <img src="images/menu_cd.png" alt="cd" class="w-40 h-40 md:w-64 md:h-64 object-contain mx-auto transition-transform hover:scale-110">
+        </div>
+        <span class="font-bubble text-sm font-bold" data-i18n="menuCd">CD</span>
+      </button>
+
+    </div>
+
+    <!-- 🌟 ログアウトボタン（レイアウトを壊さないよう、並列の位置に独立して配置） -->
+    <div class="text-center mt-12 mb-6">
+      <button id="logoutBtn" class="btn-pop doodle-border px-6 py-2 font-bubble text-sm font-bold" style="background: var(--pink); color: var(--ink);">
+        Logout
+      </button>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 【ケーキ】 -->
+<!-- ============================================================ -->
+<section id="screen-cake" class="screen relative z-10 items-center justify-center px-4 py-8">
+    <!-- バックボタン -->
+    <button class="back-btn btn-pop doodle-border fixed top-5 left-5 px-4 py-2 bg-white font-bubble font-bold z-40 flex items-center gap-1">
+        <i data-lucide="arrow-left" class="w-4 h-4"></i> <span data-i18n="back">back</span>
+    </button>
+
+    <!-- 中央のメインコンテンツエリア（全体を少し下げ、中央寄せに安定させます） -->
+    <div class="text-center w-full max-w-lg mt-12 flex flex-col items-center">
+        <!-- ケーキ・ろうそくエリア（ケーキを少し下に押し下げるため、上にマージン mt-6 を追加） -->
+        <div class="relative mx-auto mb-8 mt-6" style="width: 320px; height: 280px;">
+            <!-- 1. 26本のろうそくが均等に並ぶコンテナ -->
+            <div id="candleRow" class="absolute left-1/2 -translate-x-1/2 flex justify-between items-end" style="width: 240px; top: 10px; height: 110px; z-index: 20;">
+                <!-- ここに26本のろうそくが自動生成されます -->
+            </div>
+            <!-- 2. 元のSVGケーキ -->
+            <svg viewBox="0 0 320 170" class="absolute bottom-0 left-0 w-full" style="top:110px; z-index: 10;">
+                <path d="M15 40 Q30 18 45 40 Q60 18 75 40 Q90 18 105 40 Q120 18 135 40 Q150 18 165 40 Q180 18 195 40 Q210 18 225 40 Q240 18 255 40 Q270 18 285 40" fill="none" stroke="#332B22" stroke-width="3"/>
+                <rect x="10" y="68" width="300" height="48" rx="8" fill="#FFC8DD" stroke="#332B22" stroke-width="3"/>
+                <circle cx="60" cy="92" r="6" fill="#FF8FAB" stroke="#332B22" stroke-width="2"/>
+                <circle cx="160" cy="96" r="6" fill="#A78BFA" stroke="#332B22" stroke-width="2"/>
+                <circle cx="250" cy="92" r="6" fill="#FFD93D" stroke="#332B22" stroke-width="2"/>
+                <rect x="4" y="114" width="312" height="52" rx="10" fill="#FFE59F" stroke="#332B22" stroke-width="3"/>
+            </svg>
+        </div>
+
+        <!-- テキスト情報 -->
+        <p class="font-bubble text-lg md:text-xl mb-1" data-i18n="cakeMsg">make a wish and blow the candle out</p>
+        <p id="micStatus" class="text-xs text-gray-400 mb-6 font-bubble tracking-wide" data-i18n="micHint">🎤 Blow into the mic - one candle goes out per breath</p>
+
+        <!-- ボタンコンテナエリア -->
+        <div class="w-full flex flex-col items-center gap-4">
+            <!-- 横並びにするエリア（flex-row で横に並べ、幅に合わせてきれいに収めます） -->
+            <div class="flex flex-row justify-center items-center gap-3 w-full px-2">
+                <button id="micBtn" class="btn-pop doodle-border px-4 py-2.5 font-bubble font-bold text-sm w-1/2 max-w-[180px]" style="background:var(--sky);" data-i18n="micBtnLabel">
+                    Use microphone
+                </button>
+                <button id="blowFallbackBtn" class="btn-pop doodle-border px-4 py-2.5 font-bubble font-bold text-sm w-1/2 max-w-[180px]" style="background:var(--pink);" data-i18n="blowBtnLabel">
+                    Tap to blow (no mic)
+                </button>
+            </div>
+
+            <!-- 再点火ボタン（下部に中央配置） -->
+            <button id="litCandlesBtn" class="btn-pop doodle-border px-6 py-2.5 font-bubble font-bold text-sm" style="background:var(--sun);" data-i18n="litBtnLabel">
+                Lit the candles again
+            </button>
+        </div>
+
+        <p id="wishMadeMsg" class="font-script text-3xl mt-6 hidden" style="color:var(--coral);" data-i18n="wishMade">願い事、叶いますように</p>
+    </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 【手紙】 -->
+<!-- ============================================================ -->
+<section id="screen-letter" class="screen relative z-10 items-center justify-center px-4 py-8">
+  <button class="back-btn btn-pop doodle-border fixed top-5 left-5 px-4 py-2 bg-white font-bubble font-bold z-40 flex items-center gap-1">
+    <i data-lucide="arrow-left" class="w-4 h-4"></i> <span data-i18n="back">back</span>
+  </button>
+
+  <div class="relative w-full max-w-lg" style="min-height:70vh;">
+    <div id="envelope" class="absolute left-1/2 top-1/3 -translate-x-1/2 -translate-y-1/2 text-center">
+      <svg width="220" height="150" viewBox="0 0 220 150">
+        <rect x="5" y="5" width="210" height="140" rx="10" fill="#FFF6DC" stroke="#332B22" stroke-width="4"/>
+        <path d="M5 12 L110 96 L215 12" fill="none" stroke="#332B22" stroke-width="4" stroke-linejoin="round"/>
+        <path d="M12 138 L80 78" fill="none" stroke="#332B22" stroke-width="3"/>
+        <path d="M208 138 L140 78" fill="none" stroke="#332B22" stroke-width="3"/>
+        <circle cx="110" cy="70" r="12" fill="#FF6F61" stroke="#332B22" stroke-width="2.5"/>
+        <path d="M104 70 q6 -8 12 0 q-6 8 -12 0" fill="#fff" stroke="none" opacity=".7"/>
+      </svg>
+      <p class="font-bubble mt-2" data-i18n="envelopeHint">Tap to open</p>
+    </div>
+
+    <div id="letterPaper" class="doodle-border p-6 md:p-8" style="background:var(--cream-card);">
+      <p id="letterText" class="font-script text-xl md:text-2xl leading-relaxed whitespace-pre-wrap"></p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 【カメラ / ポラロイドアルバム】 -->
+<!-- ============================================================ -->
+<section id="screen-camera" class="screen relative z-10 items-center justify-center px-4 py-8">
+  <button class="back-btn btn-pop doodle-border fixed top-5 left-5 px-4 py-2 bg-white font-bubble font-bold z-40 flex items-center gap-1">
+    <i data-lucide="arrow-left" class="w-4 h-4"></i> <span data-i18n="back">back</span>
+  </button>
+
+  <div class="w-full max-w-3xl">
+    <h2 class="font-bubble text-2xl text-center mb-6" data-i18n="albumTitle">Favorite Moments of You(and I)</h2>
+
+    <div id="albumGrid" class="grid grid-cols-2 md:grid-cols-4 gap-6 justify-items-center mb-6"></div>
+
+    <div class="flex items-center justify-center gap-6">
+      <button id="prevSpread" class="btn-pop doodle-border px-4 py-2 font-bubble font-bold flex items-center gap-1 bg-white">
+        <i data-lucide="chevron-left" class="w-4 h-4"></i> <span data-i18n="prevPage">prev</span>
+      </button>
+      <span id="spreadIndicator" class="font-bubble font-bold">1 / 5</span>
+      <button id="nextSpread" class="btn-pop doodle-border px-4 py-2 font-bubble font-bold flex items-center gap-1 bg-white">
+        <span data-i18n="nextPage">next</span> <i data-lucide="chevron-right" class="w-4 h-4"></i>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- Lightbox -->
+<div id="lightbox" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 p-6">
+  <button id="closeLightbox" class="absolute top-6 right-6 text-white"><i data-lucide="x" class="w-8 h-8"></i></button>
+  <img id="lightboxImg" src="" class="max-h-[85vh] max-w-[90vw] rounded-lg border-4 border-white" alt="photo">
+</div>
+
+<!-- ============================================================ -->
+<!-- 【CDプレーヤー】 -->
+<!-- ============================================================ -->
+<section id="screen-cd" class="screen relative z-10 items-center justify-center px-4 py-8">
+  <button class="back-btn btn-pop doodle-border fixed top-5 left-5 px-4 py-2 bg-white font-bubble font-bold z-40 flex items-center gap-1">
+    <i data-lucide="arrow-left" class="w-4 h-4"></i> <span data-i18n="back">back</span>
+  </button>
+
+  <div class="w-full max-w-4xl flex flex-col md:flex-row items-center gap-8 justify-center">
+    <div class="doodle-border bg-white p-4 w-full max-w-sm">
+      <h3 class="font-bubble font-bold mb-3 text-lg" data-i18n="playlistTitle">Playlist</h3>
+      <ul id="playlistUl" class="space-y-1"></ul>
+    </div>
+
+    <div class="flex flex-col items-center">
+      <svg viewBox="0 0 220 260" width="220" height="260">
+        <!-- headphone band -->
+        <path d="M40 90 Q40 20 110 20 Q180 20 180 90" fill="none" stroke="#332B22" stroke-width="6" stroke-linecap="round"/>
+        <rect x="26" y="82" width="26" height="40" rx="10" fill="#FF9CC7" stroke="#332B22" stroke-width="3.5"/>
+        <rect x="168" y="82" width="26" height="40" rx="10" fill="#FF9CC7" stroke="#332B22" stroke-width="3.5"/>
+        <!-- walkman body -->
+        <rect x="60" y="120" width="100" height="120" rx="18" fill="#B39DDB" stroke="#332B22" stroke-width="4"/>
+        <circle cx="110" cy="168" r="30" fill="#FFF8E1" stroke="#332B22" stroke-width="3.5"/>
+        <circle cx="110" cy="168" r="7" fill="#332B22"/>
+        <rect x="82" y="208" width="14" height="12" rx="3" fill="#FFD24C" stroke="#332B22" stroke-width="2.5"/>
+        <rect x="103" y="208" width="14" height="12" rx="3" fill="#6FC7E0" stroke="#332B22" stroke-width="2.5"/>
+        <rect x="124" y="208" width="14" height="12" rx="3" fill="#8FD6A0" stroke="#332B22" stroke-width="2.5"/>
+      </svg>
+
+      <div class="doodle-border bg-white p-3 mt-2 text-center" style="background:#B7D6A8;">
+        <p id="nowPlayingTitle" class="font-bubble text-sm font-bold truncate">-</p>
+        <p id="nowPlayingArtist" class="text-xs truncate">-</p>
+      </div>
+      <div class="flex items-center justify-center gap-4 mt-3">
+        <button id="prevSong" class="doodle-border rounded-full w-10 h-10 flex items-center justify-center bg-white btn-pop"><i data-lucide="skip-back" class="w-4 h-4"></i></button>
+        <button id="playPause" class="doodle-border rounded-full w-14 h-14 flex items-center justify-center bg-white btn-pop"><i data-lucide="play" class="w-6 h-6"></i></button>
+        <button id="nextSong" class="doodle-border rounded-full w-10 h-10 flex items-center justify-center bg-white btn-pop"><i data-lucide="skip-forward" class="w-4 h-4"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <audio id="audioPlayer"></audio>
+</section>
+
+
+<script>
+/* ==========================================================
+   国際化 (i18n)
+   ============================================================ */
+const I18N = {
+  ja: {
+    loginTitle:"誕生日を入力してね", dateFormatHint:"月 / 日 / 年", loginBtn:"OK",
+    balloonTapHint:"画面をタップしてね", clickHere:"CLICK HERE",
+    menuCake:"ケーキ", menuLetter:"手紙", menuCamera:"カメラ", menuCd:"CDプレーヤー",
+    back:"もどる",
+    cakeMsg:"願い事をして、ろうそくの火を吹き消してね", cakeMsgSub:"make a wish and blow the candle out",
+    micHint:"「ふー」と吹いてみて",
+    micBtnLabel:"マイクを使う", blowBtnLabel:"タップして消す",
+    wishMade:"願い事、叶いますように",
+    envelopeHint:"タップして開ける",
+    albumTitle:"お気に入りの瞬間", prevPage:"まえ", nextPage:"つぎ",
+    playlistTitle:"あなたに贈るプレイリスト",
+  },
+  en: {
+    loginTitle:"Enter Your Birthday", dateFormatHint:"mm / dd / yyyy", loginBtn:"OK",
+    balloonTapHint:"Tap the screen", clickHere:"CLICK HERE",
+    menuCake:"Cake", menuLetter:"Letter", menuCamera:"Camera", menuCd:"CD Player",
+    back:"back",
+    cakeMsg:"make a wish and blow the candle out", cakeMsgSub:"願い事をして、ろうそくの火を吹き消してね",
+    micHint:"Blow into the mic",
+    micBtnLabel:"Use microphone", blowBtnLabel:"Tap to blow",
+    wishMade:"I hope your wish comes true",
+    envelopeHint:"Tap to open",
+    albumTitle:"Favorite Moments of you(and I)", prevPage:"prev", nextPage:"next",
+    playlistTitle:"Songs For Your Birthday",
+  }
+};
+let currentLang = "en";
+const HB_COLORS = ["#FF6F61","#FFD24C","#8FD6A0","#6FC7E0","#B39DDB","#FF9CC7","#F4A259","#7FB7BE","#E8A0BF","#A0C4FF"];
+
+function renderHeading(){
+  const text = "HAPPY BIRTHDAY";
+  const heading = document.getElementById("hbHeading");
+  heading.innerHTML = "";
+  let colorIdx = 0;
+  text.split("").forEach(ch=>{
+    const span = document.createElement("span");
+    if(ch === " "){ span.innerHTML = "&nbsp;&nbsp;"; }
+    else{
+      span.textContent = ch;
+      span.style.color = HB_COLORS[colorIdx % HB_COLORS.length];
+      colorIdx++;
+    }
+    heading.appendChild(span);
+  });
+}
+
+function applyLang(lang){
+  currentLang = lang;
+  document.documentElement.lang = lang;
+  document.querySelectorAll("[data-i18n]").forEach(el=>{
+    const key = el.getAttribute("data-i18n");
+    if(I18N[lang][key] !== undefined) el.textContent = I18N[lang][key];
+  });
+  document.getElementById("langJaBtn").style.background = lang==="ja" ? "var(--sun)" : "transparent";
+  document.getElementById("langEnBtn").style.background = lang==="en" ? "var(--sun)" : "transparent";
+  document.getElementById("langJaBtn").style.borderRadius = "9999px";
+  document.getElementById("langEnBtn").style.borderRadius = "9999px";
+  renderLetter();
+}
+document.getElementById("langJaBtn").addEventListener("click", ()=>applyLang("ja"));
+document.getElementById("langEnBtn").addEventListener("click", ()=>applyLang("en"));
+
+/* ============================================================
+   背景コンフェッティ
+   ============================================================ */
+(function initConfetti(){
+  const colors = ["#FF6F61","#6FC7E0","#FFD24C","#8FD6A0","#B39DDB","#FF9CC7"];
+  const bg = document.getElementById("confettiBg");
+  for(let i=0;i<26;i++){
+    const dot = document.createElement("div");
+    dot.className = "confetti-dot";
+    const size = 6 + Math.random()*10;
+    dot.style.width = size+"px";
+    dot.style.height = size+"px";
+    dot.style.top = Math.random()*100+"vh";
+    dot.style.left = Math.random()*100+"vw";
+    dot.style.background = colors[Math.floor(Math.random()*colors.length)];
+    if(Math.random() > 0.6) dot.style.borderRadius = "4px";
+    bg.appendChild(dot);
+  }
+})();
+
+/* ============================================================
+   画面遷移
+   ============================================================ */
+function showScreen(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  window.scrollTo(0,0);
+  lucide.createIcons();
+}
+document.querySelectorAll(".back-btn").forEach(btn=>{
+  btn.addEventListener("click", ()=> showScreen("screen-menu"));
+});
+document.querySelectorAll(".menu-icon-btn").forEach(card=>{
+  card.addEventListener("click", ()=> showScreen(card.dataset.target));
+});
+
+/* ============================================================
+   1. ログイン画面：日付入力
+   ============================================================ */
+(function setupDateInputs(){
+  const inputs = Array.from(document.querySelectorAll(".date-box"));
+  inputs.forEach((inp, idx)=>{
+    inp.addEventListener("input", ()=>{
+      inp.value = inp.value.replace(/[^0-9]/g,"");
+      if(inp.value.length >= inp.maxLength && idx < inputs.length-1){
+        inputs[idx+1].focus();
+      }
+    });
+    inp.addEventListener("keydown", (e)=>{
+      if(e.key === "Backspace" && inp.value==="" && idx>0){
+        inputs[idx-1].focus();
+      }
+    });
+  });
+})();
+
+document.getElementById("loginForm").addEventListener("submit", (e)=>{
+    e.preventDefault();
+    
+    // それぞれの入力ボックス（月・日・年）の値を集めて結合する
+    const inputs = Array.from(document.querySelectorAll(".date-box"));
+    const enteredDate = inputs.map(inp => inp.value).join("-"); // 例: "07-17-2000"
+    
+    // 正解の「07-17-2000」と一致するか判定
+    if (enteredDate === "07-17-2000") {
+        showScreen("screen-balloons");
+        resetBalloonScreen();
+    } else {
+        // 間違っていた場合は警告を出して入力をクリアする（お好みで）
+        alert("Try again");
+        // 入力ボックスをすべて空にして最初のボックスにフォーカスを戻す
+        inputs.forEach(inp => inp.value = "");
+        if (inputs[0]) inputs[0].focus();
+    }
+});
+
+// 🌟 ログアウトボタンを押したときの処理
+const logoutBtn = document.getElementById("logoutBtn");
+if (logoutBtn) {
+    logoutBtn.addEventListener("click", () => {
+        // 1. ログイン画面（screen-login）へ戻る
+        showScreen("screen-login");
+
+        // 2. ログイン画面の入力ボックス（月・日・年）をすべて空にリセットする
+        const loginInputs = Array.from(document.querySelectorAll(".date-box"));
+        loginInputs.forEach(inp => inp.value = "");
+        if (loginInputs[0]) loginInputs[0].focus(); // 最初の入力欄にカーソルを合わせる
+
+        // 3. ログアウト時にBGMを一時停止し、アイコンもミュート状態に戻す
+        const bgmAudio = document.getElementById("bgmAudio");
+        if (bgmAudio) {
+            bgmAudio.pause();
+            const bgmIcon = document.getElementById("bgmIcon");
+            if (bgmIcon) {
+                bgmIcon.setAttribute("data-lucide", "volume-x");
+                if (window.lucide) lucide.createIcons();
+            }
+        }
+    });
+}
+
+
+
+/* ============================================================
+   2-3. 風船アニメーション
+   ============================================================ */
+let balloonPhase = 0; // 0 = not built, 1 = floating, 2 = converged
+function resetBalloonScreen(){
+  const stage = document.getElementById("balloonStage");
+  stage.querySelectorAll(".balloon").forEach(b=>b.remove());
+  document.getElementById("merged26").style.display = "none";
+  document.getElementById("clickHereBtn").style.display = "none";
+  document.getElementById("balloonHintText").style.display = "block";
+  balloonPhase = 0;
+  buildBalloons();
+}
+
+function buildBalloons(){
+  const stage = document.getElementById("balloonStage");
+  const colors = ["#FF6F61","#6FC7E0","#FFD24C","#8FD6A0","#B39DDB","#FF9CC7"];
+  const digits = [];
+  for(let i=0;i<4;i++) digits.push(2);
+  for(let i=0;i<4;i++) digits.push(6);
+  for(let i=0;i<14;i++) digits.push(Math.floor(Math.random()*10));
+  digits.sort(()=>Math.random()-0.5);
+
+digits.forEach((d, i)=>{
+        const el = document.createElement("div");
+        el.className = "balloon balloon-float";
+        
+        // テキスト文字を入れる代わりに、保存した画像を要素内に追加する
+        const imgEl = document.createElement("img");
+        imgEl.src = `images/${d}.png`;
+        imgEl.className = "w-16 h-16 md:w-20 md:h-20 object-contain mx-auto pointer-events-none"; // サイズはお好みで調整可能です
+        el.appendChild(imgEl);
+        
+        // 元々の背景色(colors[i % colors.length])は不要なため、背景を透明（またはお好みで薄い影など）にします
+        el.style.background = "transparent";
+        el.style.border = "none"; // 元のCSSのボーダーがあれば消すため
+        el.style.boxShadow = "none"; // 元のCSSの影を消すため
+
+        const top = 10 + Math.random()*70;
+        const left = 5 + Math.random()*85;
+        el.style.top = top+"vh";
+        el.style.left = left+"vw";
+        el.dataset.digit = d; // ← これを残すことで「2」と「6」が中央に集まる処理が壊れずに動きます
+        stage.appendChild(el);
+    });
+  balloonPhase = 1;
+}
+
+document.getElementById("balloonStage").addEventListener("click", (e)=>{
+  if(e.target.id === "clickHereBtn") return;
+  if(balloonPhase !== 1) return;
+  balloonPhase = 0;
+  document.getElementById("balloonHintText").style.display = "none";
+  const balloonEls = Array.from(document.querySelectorAll("#balloonStage .balloon"));
+  balloonEls.forEach(el=>{
+    el.classList.remove("balloon-float");
+    const d = el.dataset.digit;
+    if(d === "2"){
+      el.style.top = "48%";
+      el.style.left = "calc(50% - 66px)";
+    } else if(d === "6"){
+      el.style.top = "48%";
+      el.style.left = "calc(50% + 14px)";
+    } else {
+      el.style.top = "-18vh";
+      el.classList.add("balloon-fadeup");
+    }
+  });
+
+  setTimeout(()=>{
+    balloonEls.forEach(el=>{
+      if(el.dataset.digit !== "2" && el.dataset.digit !== "6"){
+        el.remove();
+      } else {
+        el.style.opacity = "0";
+      }
+    });
+    document.getElementById("merged26").style.display = "flex";
+    document.getElementById("clickHereBtn").style.display = "inline-block";
+    // 🌟ここに追記！タイトル画像が出た瞬間にBGMを流します
+  
+  }, 2300);
+});
+document.getElementById("clickHereBtn").addEventListener("click", () => {
+    startBGM(); // 🌟ここでボタンを押した瞬間にBGMが鳴り始めます！
+    showScreen("screen-menu");
+});
+
+/* ==========================================================
+   【ケーキ】ろうそく生成 ＆ マイク検知（何回でも体験可能版）
+   ========================================================== */
+
+let isBlowing = false;
+let blowCount = 0;
+let micStream = null;      // マイクのストリームを保存する変数
+let audioContextInstance = null; // オーディオコンテキストを保存する変数
+let micAnimationId = null;  // ループ処理を止めるためのID
+
+// 1. 26本のろうそく（CSSと炎絵文字）を生成する関数
+function setupCake() {
+    const row = document.getElementById("candleRow");
+    if (!row) return;
+    
+    row.innerHTML = ""; // 初期化
+    const count = 26;
+    const colors = ["#FF6F61", "#6FC7E0", "#FFD24C", "#8FD6A0", "#B39DDB", "#FF9CC7"];
+
+    for (let i = 0; i < count; i++) {
+        const wrap = document.createElement("div");
+        wrap.className = "candle";
+        wrap.style.cssText = `
+            width: 6px; 
+            height: ${45 + Math.random()*12}px; 
+            border-radius: 3px; 
+            position: relative; 
+            background: ${colors[i % colors.length]};
+            display: flex;
+            justify-content: center;
+        `;
+        
+        wrap.innerHTML = `
+            <span class="candle-flame" style="
+                position: absolute; 
+                top: -16px; 
+                left: 50%; 
+                transform: translateX(-50%); 
+                font-size: 14px;
+                transition: all 1s ease;
+            ">🔥</span>
+        `;
+        row.appendChild(wrap);
+    }
+}
+
+// ページ読み込み時に最初の1回を実行
+setupCake();
+
+// 2. 左から順に4秒かけてウェーブしながら消灯する関数
+function blowOutAllCandles() {
+    if (isBlowing) return;
+    isBlowing = true;
+
+    const flames = document.querySelectorAll(".candle-flame");
+    if (flames.length === 0) return;
+
+    const duration = 4000; // 全体で4秒
+    const interval = duration / flames.length; // 1本あたりの遅延
+
+    flames.forEach((flame, index) => {
+        setTimeout(() => {
+            flame.style.opacity = "0";
+            flame.style.transform = "translateX(-50%) scale(0)";
+        }, index * interval);
+    });
+
+    // すべて消えた後に「願い事が叶いますように」を表示
+    setTimeout(() => {
+        const wishMsg = document.getElementById("wishMadeMsg");
+        if (wishMsg) wishMsg.classList.remove("hidden");
+    }, duration + 500);
+}
+
+// 予備ボタン（タップして消す）用の処理
+function blowOutNextCandle() {
+    blowOutAllCandles();
+}
+document.getElementById("blowFallbackBtn").addEventListener("click", blowOutNextCandle);
+// 🌟 Lit the candle ボタンを押した時に火をつけ直す処理
+document.getElementById("litCandlesBtn").addEventListener("click", () => {
+    // 完全に最初期の点火状態にリセットします
+    resetCakeScreen();
+});
+
+// 3. マイク処理の初期化と監視
+let micActive = false;
+
+document.getElementById("micBtn").addEventListener("click", async () => {
+    if (micActive) return;
+    try {
+        micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        micActive = true;
+        
+        audioContextInstance = new (window.AudioContext || window.webkitAudioContext)();
+        const source = audioContextInstance.createMediaStreamSource(micStream);
+        const analyser = audioContextInstance.createAnalyser();
+        analyser.fftSize = 512;
+        source.connect(analyser);
+        const data = new Uint8Array(analyser.frequencyBinCount);
+        
+        let cooldown = false;
+
+        function checkVolume() {
+            if (!micActive) return; // マイクがオフになったらループを止める
+            
+            analyser.getByteFrequencyData(data);
+            const avg = data.reduce((a, b) => a + b, 0) / data.length;
+            
+            if (avg > 38 && !cooldown && !isBlowing) {
+                blowCount++; // 吹いた回数を加算
+                
+                cooldown = true;
+                setTimeout(() => { cooldown = false; }, 800);
+
+                const micStatus = document.getElementById("micStatus");
+                if (blowCount === 1) {
+                    micStatus.textContent = currentLang === "ja" 
+                        ? "🎤 1回目の「ふー」を検知！もう1回吹いてね！" 
+                        : "🎤 First blow detected! Blow once more!";
+                } else if (blowCount >= 2) {
+                    blowOutAllCandles();
+                    micStatus.textContent = currentLang === "ja" 
+                        ? "🎤 消灯中..." 
+                        : "🎤 Blowing out...";
+                }
+            }
+            
+            if (!isBlowing) {
+                micAnimationId = requestAnimationFrame(checkVolume);
+            }
+        }
+        
+        checkVolume();
+        document.getElementById("micStatus").textContent = currentLang === "ja" 
+            ? "🎤 マイク起動中...「ふー」と2回吹いてね！" 
+            : "🎤 Mic is on... Blow twice!";
+            
+    } catch (err) {
+        document.getElementById("micStatus").textContent = currentLang === "ja"
+            ? "🎤 マイクが使えなかったよ。下のボタンで消してね"
+            : "Couldn't access mic - use the button below instead";
+    }
+});
+
+// 4. ケーキ画面を完全に最初期の状態にリセットする関数（入り直すたびに実行）
+function resetCakeScreen() {
+    // マイクの監視ループと状態を一度完全にストップしてリセット
+    if (micAnimationId) {
+        cancelAnimationFrame(micAnimationId);
+    }
+    if (audioContextInstance) {
+        audioContextInstance.close();
+        audioContextInstance = null;
+    }
+    if (micStream) {
+        micStream.getTracks().forEach(track => track.stop());
+        micStream = null;
+    }
+    
+    isBlowing = false; // 消灯フラグをリセット
+    blowCount = 0;     // 吹き込み回数をリセット
+    micActive = false; // マイクアクティブフラグをリセット
+
+    // 「願い事が叶いますように」のメッセージを再び隠す
+    const wishMsg = document.getElementById("wishMadeMsg");
+    if (wishMsg) {
+        wishMsg.classList.add("hidden");
+    }
+
+    // マイクのステータス表示を初期テキストに戻す
+    const micStatus = document.getElementById("micStatus");
+    if (micStatus) {
+        micStatus.textContent = currentLang === "ja" 
+            ? "🎤 マイクの音で1本ずつ消えるよ（「ふー」と吹いてみて）" 
+            : "🎤 Blow into the mic - one candle goes out per breath";
+    }
+
+    // 26本のろうそく（と火）を新しく綺麗に作り直す
+    setupCake();
+}
+
+/* ============================================================
+   【手紙】
+   ============================================================ */
+function renderLetter(){
+  const el = document.getElementById("letterText");
+  if(el) el.textContent = CONFIG.letter[currentLang];
+}
+document.getElementById("envelope").addEventListener("click", ()=>{
+  renderLetter(); // 🌟ここで手紙の文字を画面に流し込みます
+  document.getElementById("letterPaper").classList.add("open");
+});
+
+/* ============================================================
+   【カメラ / ポラロイドアルバム】4枚 x 5ページ
+   ============================================================ */
+const PHOTOS_PER_SPREAD = 4;
+let currentSpread = 0;
+const totalSpreads = Math.ceil(CONFIG.photos.length / PHOTOS_PER_SPREAD);
+
+function renderAlbum(){
+  const grid = document.getElementById("albumGrid");
+  grid.innerHTML = "";
+  const start = currentSpread * PHOTOS_PER_SPREAD;
+  const slice = CONFIG.photos.slice(start, start + PHOTOS_PER_SPREAD);
+  const tilts = [-6, 4, -3, 6];
+  slice.forEach((src, i)=>{
+    const div = document.createElement("div");
+    div.className = "polaroid";
+    div.style.width = "150px";
+    div.style.transform = `rotate(${tilts[i % tilts.length]}deg)`;
+    div.innerHTML = `<div class="polaroid-img" style="background-image:url('${src}')"></div>`;
+    div.addEventListener("click", ()=>{
+      document.getElementById("lightboxImg").src = src;
+      document.getElementById("lightbox").classList.remove("hidden");
+      document.getElementById("lightbox").classList.add("flex");
+    });
+    grid.appendChild(div);
+  });
+  document.getElementById("spreadIndicator").textContent = `${currentSpread+1} / ${totalSpreads}`;
+}
+document.getElementById("prevSpread").addEventListener("click", ()=>{
+  currentSpread = (currentSpread - 1 + totalSpreads) % totalSpreads;
+  renderAlbum();
+});
+document.getElementById("nextSpread").addEventListener("click", ()=>{
+  currentSpread = (currentSpread + 1) % totalSpreads;
+  renderAlbum();
+});
+document.getElementById("closeLightbox").addEventListener("click", ()=>{
+  document.getElementById("lightbox").classList.add("hidden");
+  document.getElementById("lightbox").classList.remove("flex");
+});
+renderAlbum();
+
+/* ============================================================
+   【CDプレーヤー】
+   ============================================================ */
+const audioEl = document.getElementById("audioPlayer");
+let currentSong = 0;
+let isPlaying = false;
+
+function renderPlaylist(){
+  const ul = document.getElementById("playlistUl");
+  ul.innerHTML = "";
+  CONFIG.playlist.forEach((song, i)=>{
+    const li = document.createElement("li");
+    li.className = "playlist-row" + (i === currentSong && isPlaying ? " playing" : "");
+    li.innerHTML = `
+      <span class="text-sm font-bold">${i+1}. ${song.title}</span>
+      <button class="song-play-btn doodle-border rounded-full w-8 h-8 flex items-center justify-center bg-white flex-shrink-0" data-idx="${i}">
+        <i data-lucide="${i===currentSong && isPlaying ? 'pause' : 'play'}" class="w-3.5 h-3.5"></i>
+      </button>`;
+    ul.appendChild(li);
+  });
+  lucide.createIcons();
+  ul.querySelectorAll(".song-play-btn").forEach(btn=>{
+    btn.addEventListener("click", (e)=>{
+      e.stopPropagation();
+      const idx = parseInt(btn.dataset.idx);
+      if(idx === currentSong){
+        isPlaying ? pauseSong() : playSong();
+      } else {
+        loadSong(idx);
+        playSong();
+      }
+    });
+  });
+}
+
+function loadSong(i){
+  currentSong = i;
+  const song = CONFIG.playlist[i];
+  audioEl.src = song.src;
+  document.getElementById("nowPlayingTitle").textContent = song.title;
+  document.getElementById("nowPlayingArtist").textContent = song.artist;
+  renderPlaylist();
+}
+
+function playSong(){
+  audioEl.play().catch(()=>{ /* dummy file may not exist yet */ });
+  isPlaying = true;
+  document.getElementById("playPause").innerHTML = '<i data-lucide="pause" class="w-6 h-6"></i>';
+  lucide.createIcons();
+  renderPlaylist();
+}
+function pauseSong(){
+  audioEl.pause();
+  isPlaying = false;
+  document.getElementById("playPause").innerHTML = '<i data-lucide="play" class="w-6 h-6"></i>';
+  lucide.createIcons();
+  renderPlaylist();
+}
+document.getElementById("playPause").addEventListener("click", ()=>{
+  isPlaying ? pauseSong() : playSong();
+});
+document.getElementById("prevSong").addEventListener("click", ()=>{
+  loadSong((currentSong - 1 + CONFIG.playlist.length) % CONFIG.playlist.length);
+  if(isPlaying) playSong();
+});
+document.getElementById("nextSong").addEventListener("click", ()=>{
+  loadSong((currentSong + 1) % CONFIG.playlist.length);
+  if(isPlaying) playSong();
+});
+audioEl.addEventListener("timeupdate", ()=>{ /* progress hook available if needed */ });
+audioEl.addEventListener("ended", ()=>{
+  document.getElementById("nextSong").click();
+});
+loadSong(0);
+
+/* ============================================================
+   BGM ウィジェット（常時BGM・音量／ON-OFF）
+   ============================================================ */
+const bgmAudio = document.getElementById("bgmAudio");
+bgmAudio.src = CONFIG.bgm.src;
+bgmAudio.volume = CONFIG.bgm.defaultVolume;
+document.getElementById("bgmVolume").value = Math.round(CONFIG.bgm.defaultVolume*100);
+let bgmOn = true;
+let bgmStarted = false;
+
+function startBGM(){
+  if(bgmStarted) return;
+  bgmStarted = true;
+  bgmAudio.play().catch(()=>{ /* file may not exist yet, or needs user gesture — already have one via login submit */ });
+}
+document.getElementById("bgmFab").addEventListener("click", ()=>{
+  document.getElementById("bgmPanel").classList.toggle("open");
+});
+document.getElementById("bgmToggle").addEventListener("click", ()=>{
+  bgmOn = !bgmOn;
+  if(bgmOn){
+    bgmAudio.play().catch(()=>{});
+    document.getElementById("bgmIcon").setAttribute("data-lucide","volume-2");
+  } else {
+    bgmAudio.pause();
+    document.getElementById("bgmIcon").setAttribute("data-lucide","volume-x");
+  }
+  lucide.createIcons();
+});
+document.getElementById("bgmVolume").addEventListener("input", (e)=>{
+  bgmAudio.volume = e.target.value/100;
+});
+
+/* ============================================================
+   初期化
+   ============================================================ */
+renderHeading();
+applyLang("ja");
+lucide.createIcons();
+</script>
+
+</body>
+</html>
